@@ -1,33 +1,46 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
-import { TIngredient } from '@utils-types';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from '../../services/store';
+import {
+  fetchOrderById,
+  clearSelectedOrder
+} from '../../services/reducers/feedSlice';
+import { RootState } from 'src/services/store';
+import { TIngredient, TOrder } from '@utils-types';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch();
+  const { selectedOrder, isLoadingOrder, error } = useSelector(
+    (state: RootState) => state.feed
+  );
+  const ingredients = useSelector(
+    (state: RootState) => state.ingredients.items
+  );
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchOrderById(Number(id)));
+    }
 
-  /* Готовим данные для отображения */
+    return () => {
+      dispatch(clearSelectedOrder()); // Очищаем данные при размонтировании компонента
+    };
+  }, [dispatch, id]);
+
+  // Обрабатываем данные для отображения
   const orderInfo = useMemo(() => {
-    if (!orderData || !ingredients.length) return null;
+    if (!selectedOrder || !ingredients.length) return null;
 
-    const date = new Date(orderData.createdAt);
+    const date = new Date(selectedOrder.createdAt);
 
     type TIngredientsWithCount = {
       [key: string]: TIngredient & { count: number };
     };
 
-    const ingredientsInfo = orderData.ingredients.reduce(
+    const ingredientsInfo = selectedOrder.ingredients.reduce(
       (acc: TIngredientsWithCount, item) => {
         if (!acc[item]) {
           const ingredient = ingredients.find((ing) => ing._id === item);
@@ -52,15 +65,24 @@ export const OrderInfo: FC = () => {
     );
 
     return {
-      ...orderData,
+      ...selectedOrder,
       ingredientsInfo,
       date,
-      total
+      total,
+      status: selectedOrder.status
     };
-  }, [orderData, ingredients]);
+  }, [selectedOrder, ingredients]);
+
+  if (isLoadingOrder) {
+    return <Preloader />;
+  }
+
+  if (error) {
+    return <p>Ошибка загрузки заказа: {error}</p>;
+  }
 
   if (!orderInfo) {
-    return <Preloader />;
+    return <p>Заказ не найден</p>;
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;

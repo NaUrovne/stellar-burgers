@@ -1,15 +1,38 @@
 import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
 import { TOrder } from '@utils-types';
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
+import { useDispatch, useSelector } from '../../services/store';
+import { fetchFeed } from '../../services/reducers/feedSlice';
+import { RootState } from '../../services/store';
 
 export const Feed: FC = () => {
-  /** TODO: взять переменную из стора */
-  const orders: TOrder[] = [];
+  const dispatch = useDispatch();
 
-  if (!orders.length) {
+  // Получаем данные из Redux-хранилища
+  const { orders, isLoading, error } = useSelector(
+    (state: RootState) => state.feed
+  );
+
+  useEffect(() => {
+    // Загружаем данные ленты заказов при монтировании компонента
+    dispatch(fetchFeed());
+  }, [dispatch]);
+
+  if (isLoading) {
     return <Preloader />;
   }
 
-  <FeedUI orders={orders} handleGetFeeds={() => {}} />;
+  if (error) {
+    return (
+      <p className='text text_type_main-medium'>{`Ошибка загрузки данных: ${error}`}</p>
+    );
+  }
+
+  return (
+    <FeedUI
+      orders={orders}
+      handleGetFeeds={() => dispatch(fetchFeed())} // Пример для обновления данных
+    />
+  );
 };
