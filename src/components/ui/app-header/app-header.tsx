@@ -19,26 +19,36 @@ export const AppHeaderUI: FC<TAppHeaderUIProps> = ({ userName }) => {
           <Link
             to='/'
             className={`${styles.link} ${
-              location.pathname === '/' ? styles.active : ''
+              location.pathname === '/' ? styles.link_active : ''
             }`}
           >
             <BurgerIcon
               type={location.pathname === '/' ? 'primary' : 'secondary'}
             />
-            <p className='text text_type_main-default ml-2 mr-10'>
+            <p
+              className={`text text_type_main-default ml-2 mr-10 ${
+                location.pathname === '/' ? styles.link_active : ''
+              }`}
+            >
               Конструктор
             </p>
           </Link>
           <Link
             to='/feed'
             className={`${styles.link} ${
-              location.pathname === '/feed' ? styles.active : ''
+              location.pathname === '/feed' ? styles.link_active : ''
             }`}
           >
             <ListIcon
               type={location.pathname === '/feed' ? 'primary' : 'secondary'}
             />
-            <p className='text text_type_main-default ml-2'>Лента заказов</p>
+            <p
+              className={`text text_type_main-default ml-2 ${
+                location.pathname === '/feed' ? styles.link_active : ''
+              }`}
+            >
+              Лента заказов
+            </p>
           </Link>
         </div>
         <div className={styles.logo}>
@@ -48,7 +58,7 @@ export const AppHeaderUI: FC<TAppHeaderUIProps> = ({ userName }) => {
           <Link
             to='/profile'
             className={`${styles.link} ${
-              location.pathname.startsWith('/profile') ? styles.active : ''
+              location.pathname.startsWith('/profile') ? styles.link_active : ''
             }`}
           >
             <ProfileIcon
@@ -58,7 +68,13 @@ export const AppHeaderUI: FC<TAppHeaderUIProps> = ({ userName }) => {
                   : 'secondary'
               }
             />
-            <p className='text text_type_main-default ml-2'>
+            <p
+              className={`text text_type_main-default ml-2 ${
+                location.pathname.startsWith('/profile')
+                  ? styles.link_active
+                  : ''
+              }`}
+            >
               {userName || 'Личный кабинет'}
             </p>
           </Link>

@@ -23,28 +23,17 @@ const initialState: FeedState = {
 };
 
 // Thunk для получения данных ленты заказов
-export const fetchFeed = createAsyncThunk(
-  'feed/fetchFeed',
-  async (_, { rejectWithValue }) => {
-    try {
-      const data = await getFeedsApi();
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.message || 'Ошибка загрузки ленты заказов');
-    }
-  }
-);
+export const fetchFeed = createAsyncThunk('feed/fetchFeed', async (_) => {
+  const data = await getFeedsApi();
+  return data;
+});
 
 // Thunk для загрузки заказа по ID
 export const fetchOrderById = createAsyncThunk(
   'feed/fetchOrderById',
-  async (id: number, { rejectWithValue }) => {
-    try {
-      const data = await getOrderByNumberApi(id);
-      return data.orders[0];
-    } catch (err: any) {
-      return rejectWithValue(err.message || 'Ошибка загрузки заказа');
-    }
+  async (id: number) => {
+    const data = await getOrderByNumberApi(id);
+    return data.orders[0];
   }
 );
 
@@ -72,7 +61,7 @@ const feedSlice = createSlice({
       })
       .addCase(fetchFeed.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Ошибка загрузки ленты';
       });
 
     // Обработка выбранного заказа
@@ -87,7 +76,7 @@ const feedSlice = createSlice({
       })
       .addCase(fetchOrderById.rejected, (state, action) => {
         state.isLoadingOrder = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Ошибка загрузки заказа по айди';
       });
   }
 });

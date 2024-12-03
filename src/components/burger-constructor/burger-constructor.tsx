@@ -4,7 +4,8 @@ import { RootState } from '../../services/store';
 import { BurgerConstructorUI } from '@ui';
 import {
   placeOrder,
-  clearOrderModal
+  clearOrderModal,
+  clearConstructor
 } from '../../services/reducers/ingredientsSlice';
 import { TOrder } from '@utils-types';
 import { useNavigate } from 'react-router-dom';
@@ -70,7 +71,11 @@ export const BurgerConstructor: FC = () => {
       ...ingredients.map((ingredient) => ingredient._id)
     ];
 
-    dispatch(placeOrder(ingredientsIds)); // Отправляем заказ
+    dispatch(placeOrder(ingredientsIds)).then((action) => {
+      if (placeOrder.fulfilled.match(action)) {
+        dispatch(clearConstructor());
+      }
+    }); // Отправляем заказ
   };
 
   // Функция для закрытия модального окна

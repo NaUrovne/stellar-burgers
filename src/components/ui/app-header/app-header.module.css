@@ -16,13 +16,24 @@
 
 .link {
   display: flex;
+  align-items: center;
   text-decoration: none;
-  color: var(--text-inactive-color);
+  color: var(--text-inactive-color); /* Неактивный цвет */
+  transition: color 0.3s ease;
 }
 
 .link_active {
-  color: var(--text-primary-color);
+  color: var(--text-primary-color); /* Активный цвет */
 }
+
+.link p {
+  color: var(--text-inactive-color); /* Текст в неактивном состоянии */
+}
+
+.link_active p {
+  color: var(--text-primary-color); /* Текст в активном состоянии */
+}
+
 
 .link_position_last {
   display: flex;

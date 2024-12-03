@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useDispatch } from '../../services/store';
+import { useDispatch, useSelector } from '../../services/store';
 import {
   ConstructorPage,
   Feed,
@@ -23,7 +23,8 @@ import {
   useMatch
 } from 'react-router-dom';
 import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
-import { fetchIngredients } from '../../services/reducers/ingredientsSlice'; // Импортируем action
+import { fetchIngredients } from '../../services/reducers/ingredientsSlice';
+import { checkAuth } from '../../services/reducers/authSlice';
 import { ProtectedRoute } from '../protected-route/ProtectedRoute';
 
 const App = () => {
@@ -35,10 +36,16 @@ const App = () => {
   const background = location.state && location.state.background;
 
   const dispatch = useDispatch();
-
   // Загружаем ингредиенты при загрузке приложения
   useEffect(() => {
     dispatch(fetchIngredients());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('refreshToken');
+    if (token) {
+      dispatch(checkAuth());
+    }
   }, [dispatch]);
 
   const handleModalClose = () => {
@@ -52,13 +59,25 @@ const App = () => {
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route
+          path='/feed/:id'
+          element={
+            <div className={styles.detailPageWrap}>
+              <p
+                className={`text text_type_digits-default ${styles.detailHeader}`}
+              >
+                {`#${orderNumber && orderNumber.padStart(6, '0')}`}
+              </p>
+              <OrderInfo />
+            </div>
+          }
+        />
+        <Route
           path='/ingredients/:id'
           element={
             <div className={styles.detailPageWrap}>
               <p className={`text text_type_main-large ${styles.detailHeader}`}>
                 Детали ингредиента
               </p>
-
               <IngredientDetails />
             </div>
           }
@@ -111,6 +130,21 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path='/profile/orders/:id'
+          element={
+            <ProtectedRoute>
+              <div className={styles.detailPageWrap}>
+                <p
+                  className={`text text_type_digits-default ${styles.detailHeader}`}
+                >
+                  {`#${orderNumber && orderNumber.padStart(6, '0')}`}
+                </p>
+                <OrderInfo />
+              </div>
+            </ProtectedRoute>
+          }
+        />
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
@@ -131,7 +165,7 @@ const App = () => {
           <Route
             path='/ingredients/:id'
             element={
-              <Modal title='Ingredient Details' onClose={handleModalClose}>
+              <Modal title='Детали ингредиента' onClose={handleModalClose}>
                 <IngredientDetails />
               </Modal>
             }

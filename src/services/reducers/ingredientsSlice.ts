@@ -25,25 +25,17 @@ const initialState: IngredientsState = {
 // Создаем Thunk для получения данных ингредиентов
 export const fetchIngredients = createAsyncThunk(
   'ingredients/fetchIngredients',
-  async (_, { rejectWithValue }) => {
-    try {
-      const data = await getIngredientsApi();
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.message || 'Ошибка загрузки ингредиентов');
-    }
+  async (_) => {
+    const data = await getIngredientsApi();
+    return data;
   }
 );
 
 export const placeOrder = createAsyncThunk<number, string[]>(
   'ingredients/placeOrder',
-  async (ingredientsIds, { rejectWithValue }) => {
-    try {
-      const data = await orderBurgerApi(ingredientsIds);
-      return data.order.number; //возвращаем номер заказа
-    } catch (err: any) {
-      return rejectWithValue(err.message || 'Ошибка оформления заказа');
-    }
+  async (ingredientsIds) => {
+    const data = await orderBurgerApi(ingredientsIds);
+    return data.order.number; //возвращаем номер заказа
   }
 );
 
@@ -59,7 +51,8 @@ const ingredientsSlice = createSlice({
       state.bun = action.payload;
     },
     addIngredient(state, action) {
-      state.ingredients.push(action.payload);
+      const uniqueId = `${Date.now()}-${Math.random()}`;
+      state.ingredients.push({ ...action.payload, uniqueId });
     },
     removeIngredient(state, action) {
       state.ingredients = state.ingredients.filter(
@@ -105,7 +98,7 @@ const ingredientsSlice = createSlice({
       })
       .addCase(fetchIngredients.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Ошибка загрузки ингредиентов';
       })
       .addCase(placeOrder.pending, (state) => {
         state.orderRequest = true;
@@ -117,7 +110,7 @@ const ingredientsSlice = createSlice({
       })
       .addCase(placeOrder.rejected, (state, action) => {
         state.orderRequest = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Ошибка создания заказа';
       });
   }
 });
