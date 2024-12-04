@@ -1,6 +1,7 @@
 import { FC, memo, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
+import { useSelector } from '../../services/store';
 import { OrderCardProps } from './type';
 import { TIngredient } from '@utils-types';
 import { OrderCardUI } from '../ui/order-card';
@@ -10,12 +11,13 @@ const maxIngredients = 6;
 export const OrderCard: FC<OrderCardProps> = memo(({ order }) => {
   const location = useLocation();
 
-  /** TODO: взять переменную из стора */
-  const ingredients: TIngredient[] = [];
+  // Получаем список ингредиентов из Redux Store
+  const ingredients = useSelector((state) => state.ingredients.items);
 
   const orderInfo = useMemo(() => {
     if (!ingredients.length) return null;
 
+    // Находим ингредиенты, входящие в заказ
     const ingredientsInfo = order.ingredients.reduce(
       (acc: TIngredient[], item: string) => {
         const ingredient = ingredients.find((ing) => ing._id === item);
@@ -25,16 +27,21 @@ export const OrderCard: FC<OrderCardProps> = memo(({ order }) => {
       []
     );
 
+    // Считаем общую стоимость заказа
     const total = ingredientsInfo.reduce((acc, item) => acc + item.price, 0);
 
+    // Ограничиваем количество отображаемых ингредиентов
     const ingredientsToShow = ingredientsInfo.slice(0, maxIngredients);
 
+    // Рассчитываем оставшееся количество ингредиентов
     const remains =
       ingredientsInfo.length > maxIngredients
         ? ingredientsInfo.length - maxIngredients
         : 0;
 
+    // Преобразуем дату заказа
     const date = new Date(order.createdAt);
+
     return {
       ...order,
       ingredientsInfo,
