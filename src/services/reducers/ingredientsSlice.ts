@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createAction } from '@reduxjs/toolkit';
 import { getIngredientsApi, orderBurgerApi } from '../../utils/burger-api';
 import { TIngredient } from '../../utils/types';
 
@@ -39,6 +39,17 @@ export const placeOrder = createAsyncThunk<number, string[]>(
   }
 );
 
+// Новый Action Creator
+export const addIngredient = createAction(
+  'ingredients/addIngredient',
+  (ingredient) => {
+    const uniqueId = `ingredient-${Date.now()}-${Math.random()}`;
+    return {
+      payload: { ...ingredient, uniqueId }
+    };
+  }
+);
+
 // Создаем Slice
 const ingredientsSlice = createSlice({
   name: 'ingredients',
@@ -49,10 +60,6 @@ const ingredientsSlice = createSlice({
     },
     setBun(state, action) {
       state.bun = action.payload;
-    },
-    addIngredient(state, action) {
-      const uniqueId = `${Date.now()}-${Math.random()}`;
-      state.ingredients.push({ ...action.payload, uniqueId });
     },
     removeIngredient(state, action) {
       state.ingredients = state.ingredients.filter(
@@ -111,13 +118,16 @@ const ingredientsSlice = createSlice({
       .addCase(placeOrder.rejected, (state, action) => {
         state.orderRequest = false;
         state.error = action.error.message || 'Ошибка создания заказа';
+      })
+      .addCase(addIngredient, (state, action) => {
+        // Обрабатываем Action Creator addIngredient
+        state.ingredients.push(action.payload);
       });
   }
 });
 
 export const {
   setBun,
-  addIngredient,
   removeIngredient,
   clearConstructor,
   clearOrderModal,
